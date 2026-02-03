@@ -1,19 +1,16 @@
-package com.osaka.cashbalancerapi.entities
+package com.osaka.cashbalancerapi.models
 
+import com.osaka.cashbalancerapi.enums.InvoiceType
+import jakarta.validation.constraints.Positive
 import java.math.BigDecimal
+import java.util.UUID
 
 /**
- * Representa una venta con factura
+ * Representa una venta con factura (A o B)
  */
 data class InvoiceSale(
-    val invoiceType: InvoiceType,
+    val type: InvoiceType,
+    @field:Positive(message = "Amount must be greater than zero")
     val amount: BigDecimal,
+    val id: UUID = UUID.randomUUID(),
 )
-
-enum class InvoiceType {
-    /** Factura A - Para empresas */
-    A,
-
-    /** Factura B - Para consumidor final */
-    B,
-}

@@ -1,4 +1,4 @@
-package com.osaka.cashbalancerapi.shared
+package com.osaka.cashbalancerapi.enums
 
 enum class Location {
     PUERTO_MADERO,

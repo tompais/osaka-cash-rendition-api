@@ -1,10 +1,9 @@
-package com.osaka.cashbalancerapi.entities
+package com.osaka.cashbalancerapi.postgresql.r2dbc.entities
 
 import com.osaka.cashbalancerapi.enums.Location
 import com.osaka.cashbalancerapi.enums.Shift
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column
-import org.springframework.data.relational.core.mapping.MappedCollection
 import org.springframework.data.relational.core.mapping.Table
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -27,16 +26,18 @@ data class CashRenditionEntity(
     val marketing: BigDecimal = BigDecimal.ZERO,
     @Column("current_account")
     val currentAccount: BigDecimal = BigDecimal.ZERO,
+    // AdditionalData fields
+    @Column("salon_otoshis")
+    val salonOtoshis: UInt = 0u,
+    @Column("dely_osk_ohashis")
+    val delyOskOhashis: UInt = 0u,
+    @Column("dely_osk_orders")
+    val delyOskOrders: UInt = 0u,
+    @Column("dely_nt_orders")
+    val delyNtOrders: UInt = 0u,
+    @Column("dely_nt_ohashis")
+    val delyNtOhashis: UInt = 0u,
     @Id
     @Column("id")
-    val id: UUID = UUID.randomUUID(),
-    // Relaciones OneToMany
-    @MappedCollection(idColumn = "cash_rendition_id")
-    val reliefs: Set<ReliefEntity> = emptySet(),
-    @MappedCollection(idColumn = "cash_rendition_id")
-    val invoiceSales: Set<InvoiceSaleEntity> = emptySet(),
-    @MappedCollection(idColumn = "cash_rendition_id")
-    val deliverySales: Set<DeliverySaleEntity> = emptySet(),
-    @MappedCollection(idColumn = "cash_rendition_id")
-    val bigBoxSales: Set<BigBoxSaleEntity> = emptySet(),
+    val id: UUID? = null,
 )

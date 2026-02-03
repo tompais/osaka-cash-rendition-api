@@ -1,4 +1,4 @@
-package com.osaka.cashbalancerapi.entities
+package com.osaka.cashbalancerapi.postgresql.r2dbc.entities
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column
@@ -14,7 +14,9 @@ data class BigBoxSaleEntity(
     val quantity: UInt,
     @Column("unit_price_snapshot")
     val unitPriceSnapshot: BigDecimal,
+    @Column("cash_rendition_id")
+    val cashRenditionId: UUID,
     @Id
     @Column("id")
-    val id: UUID = UUID.randomUUID(),
+    val id: UUID? = null,
 )

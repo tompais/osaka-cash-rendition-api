@@ -1,17 +1,15 @@
 package com.osaka.cashbalancerapi.requests
 
 import com.osaka.cashbalancerapi.enums.Currency
+import jakarta.validation.constraints.PastOrPresent
+import jakarta.validation.constraints.Positive
 import java.math.BigDecimal
-
-)
-val validFrom: LocalDate = LocalDate.now(),
-val rateToArs: BigDecimal,
-val currency: Currency,
+import java.time.LocalDate
 
 data class CreateExchangeRateRequest(
-
-    import java.time.LocalDate
-import java.math.BigDecimal
-import com.osaka.cashbalancerapi.enums.Currency
-
-
+    val currency: Currency,
+    @field:Positive(message = "Rate to ARS must be greater than zero")
+    val rateToArs: BigDecimal,
+    @field:PastOrPresent(message = "Valid from date cannot be in the future")
+    val validFrom: LocalDate = LocalDate.now(),
+)

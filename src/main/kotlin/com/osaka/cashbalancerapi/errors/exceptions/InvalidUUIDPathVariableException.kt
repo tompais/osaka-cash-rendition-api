@@ -6,8 +6,9 @@ import org.springframework.web.server.ResponseStatusException
 class InvalidUUIDPathVariableException(
     parameterName: String,
     value: String,
-    expectedType: String,
+    cause: Throwable,
 ) : ResponseStatusException(
         HttpStatus.BAD_REQUEST,
-        "Invalid path variable '$parameterName': value '$value' is not a valid $expectedType",
+        "Invalid path variable '$parameterName': value '$value' is not a valid UUID",
+        cause,
     )

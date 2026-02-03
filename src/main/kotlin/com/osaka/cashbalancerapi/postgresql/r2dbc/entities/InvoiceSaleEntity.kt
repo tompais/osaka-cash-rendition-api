@@ -1,6 +1,6 @@
-package com.osaka.cashbalancerapi.entities
+package com.osaka.cashbalancerapi.postgresql.r2dbc.entities
 
-import com.osaka.cashbalancerapi.models.InvoiceSale
+import com.osaka.cashbalancerapi.enums.InvoiceType
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
@@ -10,10 +10,12 @@ import java.util.UUID
 @Table("invoice_sales")
 data class InvoiceSaleEntity(
     @Column("type")
-    val type: InvoiceSale.InvoiceType,
+    val type: InvoiceType,
     @Column("amount")
     val amount: BigDecimal,
+    @Column("cash_rendition_id")
+    val cashRenditionId: UUID,
     @Id
     @Column("id")
-    val id: UUID = UUID.randomUUID(),
+    val id: UUID? = null,
 )

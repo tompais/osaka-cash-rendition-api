@@ -4,20 +4,19 @@ import com.osaka.cashbalancerapi.enums.Location
 import com.osaka.cashbalancerapi.enums.Shift
 import com.osaka.cashbalancerapi.models.AdditionalData
 import com.osaka.cashbalancerapi.models.SalesData
-
-)
-val additionalData: AdditionalData,
-val salesData: SalesData,
-val location: Location,
-val shift: Shift,
-val userId: UUID,
+import jakarta.validation.Valid
+import jakarta.validation.constraints.PastOrPresent
+import java.time.LocalDate
+import java.util.UUID
 
 data class CreateCashRenditionRequest(
-
-    import java.util.UUID
-import com.osaka.cashbalancerapi.models.SalesData
-import com.osaka.cashbalancerapi.models.AdditionalData
-import com.osaka.cashbalancerapi.enums.Shift
-import com.osaka.cashbalancerapi.enums.Location
-
-
+    val userId: UUID,
+    val shift: Shift,
+    val location: Location,
+    @field:Valid
+    val salesData: SalesData = SalesData(),
+    @field:Valid
+    val additionalData: AdditionalData = AdditionalData(),
+    @field:PastOrPresent(message = "Shift date cannot be in the future")
+    val shiftDate: LocalDate = LocalDate.now(),
+)

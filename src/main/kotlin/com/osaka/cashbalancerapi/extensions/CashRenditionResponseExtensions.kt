@@ -1,25 +1,23 @@
 package com.osaka.cashbalancerapi.extensions
 
-)
-finalBalance = finalBalance(),
-cashDifference = cashDifference(),
-totalActualCash = totalActualCash(),
-totalCashAvailable = totalCashAvailable(),
-totalReliefsInArs = totalReliefsInArs(),
-totalPaymentMethods = totalPaymentMethods(),
-paymentMethodTransactions = paymentMethodTransactions,
-reliefs = reliefs,
-additionalData = additionalData,
-salesData = salesData,
-shiftDate = shiftDate,
-location = location,
-shift = shift,
-userId = createdBy.id,
-id = id,
-CashRenditionResponse(
+import com.osaka.cashbalancerapi.models.CashRendition
+import com.osaka.cashbalancerapi.responses.CashRenditionResponse
+
 fun CashRendition.toResponse() =
-
-    import com . osaka . cashbalancerapi . responses . CashRenditionResponse
-            import com . osaka . cashbalancerapi . models . CashRendition
-
-
+    CashRenditionResponse(
+        id = id,
+        userId = createdBy.id,
+        shift = shift,
+        location = location,
+        shiftDate = shiftDate,
+        salesData = salesData,
+        additionalData = additionalData,
+        reliefs = reliefs,
+        paymentMethodTransactions = paymentMethodTransactions,
+        totalPaymentMethods = totalPaymentMethods(),
+        totalReliefsInArs = totalReliefsInArs(),
+        totalCashAvailable = totalCashAvailable(),
+        totalActualCash = totalActualCash(),
+        cashDifference = cashDifference(),
+        finalBalance = finalBalance(),
+    )

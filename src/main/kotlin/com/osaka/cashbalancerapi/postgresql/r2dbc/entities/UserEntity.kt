@@ -1,4 +1,4 @@
-package com.osaka.cashbalancerapi.entities
+package com.osaka.cashbalancerapi.postgresql.r2dbc.entities
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column
@@ -15,5 +15,5 @@ data class UserEntity(
     val dni: UInt,
     @Id
     @Column("id")
-    val id: UUID = UUID.randomUUID(),
+    val id: UUID? = null,
 )

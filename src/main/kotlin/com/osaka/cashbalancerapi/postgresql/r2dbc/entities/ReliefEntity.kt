@@ -1,4 +1,4 @@
-package com.osaka.cashbalancerapi.entities
+package com.osaka.cashbalancerapi.postgresql.r2dbc.entities
 
 import com.osaka.cashbalancerapi.enums.Currency
 import org.springframework.data.annotation.Id
@@ -15,7 +15,13 @@ data class ReliefEntity(
     val amount: BigDecimal,
     @Column("currency")
     val currency: Currency = Currency.ARS,
+    @Column("exchange_rate_snapshot")
+    val exchangeRateSnapshot: BigDecimal,
+    @Column("exchange_rate_id")
+    val exchangeRateId: UUID,
+    @Column("cash_rendition_id")
+    val cashRenditionId: UUID,
     @Id
     @Column("id")
-    val id: UUID = UUID.randomUUID(),
+    val id: UUID? = null,
 )

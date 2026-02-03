@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 @Repository
-interface iExchangeRateRepository : CoroutineCrudRepository<ExchangeRateEntity, UUID> {
+interface IExchangeRateRepository : CoroutineCrudRepository<ExchangeRateEntity, UUID> {
     /**
      * Encuentra el tipo de cambio activo para una moneda en una fecha específica
      */
@@ -39,9 +39,4 @@ interface iExchangeRateRepository : CoroutineCrudRepository<ExchangeRateEntity, 
         """,
     )
     fun findAllActive(): Flow<ExchangeRateEntity>
-
-    /**
-     * Encuentra todos los tipos de cambio por moneda
-     */
-    fun findAllByCurrency(currency: Currency): Flow<ExchangeRateEntity>
 }
