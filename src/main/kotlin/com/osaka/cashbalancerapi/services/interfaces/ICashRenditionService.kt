@@ -7,20 +7,25 @@ import com.osaka.cashbalancerapi.enums.InvoiceType
 import com.osaka.cashbalancerapi.enums.Location
 import com.osaka.cashbalancerapi.enums.PaymentMethodType
 import com.osaka.cashbalancerapi.enums.Shift
-import com.osaka.cashbalancerapi.models.AdditionalData
 import com.osaka.cashbalancerapi.models.CashRendition
-import com.osaka.cashbalancerapi.models.SalesData
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
 
 interface ICashRenditionService {
+    /**
+     * Crea un rendimiento de caja base (sin sales data ni additional data)
+     * Los datos de venta y adicionales se agregan posteriormente mediante endpoints específicos
+     * @param userId ID del usuario que crea el rendimiento
+     * @param shift Turno (MORNING, AFTERNOON, NIGHT)
+     * @param location Local (COLEGIALES, PUERTO_MADERO)
+     * @param shiftDate Fecha del turno
+     * @return El rendimiento de caja creado
+     */
     suspend fun create(
         userId: UUID,
         shift: Shift,
         location: Location,
-        salesData: SalesData,
-        additionalData: AdditionalData,
         shiftDate: LocalDate,
     ): CashRendition
 
@@ -115,5 +120,81 @@ interface ICashRenditionService {
         renditionId: UUID,
         deliveryPlatform: DeliveryPlatform,
         amount: BigDecimal,
+    ): CashRendition
+
+    /**
+     * Actualiza el saldo inicial del rendimiento de caja
+     * @param renditionId ID del rendimiento de caja
+     * @param amount Monto del saldo inicial
+     * @return El rendimiento actualizado
+     * @throws CashRenditionNotFoundException si el rendimiento no existe
+     */
+    suspend fun updateInitialBalance(
+        renditionId: UUID,
+        amount: BigDecimal,
+    ): CashRendition
+
+    /**
+     * Actualiza el monto de marketing (ventas en negro) del rendimiento de caja
+     * @param renditionId ID del rendimiento de caja
+     * @param amount Monto de marketing
+     * @return El rendimiento actualizado
+     * @throws CashRenditionNotFoundException si el rendimiento no existe
+     */
+    suspend fun updateMarketing(
+        renditionId: UUID,
+        amount: BigDecimal,
+    ): CashRendition
+
+    /**
+     * Actualiza el monto de cuenta corriente del rendimiento de caja
+     * @param renditionId ID del rendimiento de caja
+     * @param amount Monto de cuenta corriente
+     * @return El rendimiento actualizado
+     * @throws CashRenditionNotFoundException si el rendimiento no existe
+     */
+    suspend fun updateCurrentAccount(
+        renditionId: UUID,
+        amount: BigDecimal,
+    ): CashRendition
+
+    /**
+     * Actualiza los datos adicionales del salón/lounge
+     * @param renditionId ID del rendimiento de caja
+     * @param otoshis Cantidad de cubiertos/personas
+     * @return El rendimiento actualizado
+     * @throws CashRenditionNotFoundException si el rendimiento no existe
+     */
+    suspend fun updateLoungeData(
+        renditionId: UUID,
+        otoshis: UInt,
+    ): CashRendition
+
+    /**
+     * Actualiza los datos adicionales del delivery Osaka
+     * @param renditionId ID del rendimiento de caja
+     * @param ohashis Cantidad de comensales
+     * @param orders Cantidad de pedidos
+     * @return El rendimiento actualizado
+     * @throws CashRenditionNotFoundException si el rendimiento no existe
+     */
+    suspend fun updateDeliveryOsakaData(
+        renditionId: UUID,
+        ohashis: UInt,
+        orders: UInt,
+    ): CashRendition
+
+    /**
+     * Actualiza los datos adicionales del delivery Nori Taco
+     * @param renditionId ID del rendimiento de caja
+     * @param ohashis Cantidad de comensales
+     * @param orders Cantidad de pedidos
+     * @return El rendimiento actualizado
+     * @throws CashRenditionNotFoundException si el rendimiento no existe
+     */
+    suspend fun updateDeliveryNoriTacoData(
+        renditionId: UUID,
+        ohashis: UInt,
+        orders: UInt,
     ): CashRendition
 }

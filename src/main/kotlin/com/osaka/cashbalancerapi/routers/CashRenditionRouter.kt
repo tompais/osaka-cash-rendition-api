@@ -36,6 +36,24 @@ class CashRenditionRouter {
 
                     // PUT /cash-renditions/{id}/delivery-sales - Agregar/actualizar venta por delivery
                     PUT("/{id}/delivery-sales", handler::addOrUpdateDeliverySale)
+
+                    // PUT /cash-renditions/{id}/initial-balance - Actualizar saldo inicial
+                    PUT("/{id}/initial-balance", handler::updateInitialBalance)
+
+                    // PUT /cash-renditions/{id}/marketing - Actualizar marketing
+                    PUT("/{id}/marketing", handler::updateMarketing)
+
+                    // PUT /cash-renditions/{id}/current-account - Actualizar cuenta corriente
+                    PUT("/{id}/current-account", handler::updateCurrentAccount)
+
+                    // PUT /cash-renditions/{id}/lounge-data - Actualizar datos del salón
+                    PUT("/{id}/lounge-data", handler::updateLoungeData)
+
+                    // PUT /cash-renditions/{id}/delivery-osaka-data - Actualizar datos delivery Osaka
+                    PUT("/{id}/delivery-osaka-data", handler::updateDeliveryOsakaData)
+
+                    // PUT /cash-renditions/{id}/delivery-nori-taco-data - Actualizar datos delivery Nori Taco
+                    PUT("/{id}/delivery-nori-taco-data", handler::updateDeliveryNoriTacoData)
                 }
             }
         }

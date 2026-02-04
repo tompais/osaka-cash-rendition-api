@@ -31,6 +31,10 @@ import com.osaka.cashbalancerapi.postgresql.r2dbc.repositories.interfaces.IRelie
 import com.osaka.cashbalancerapi.services.interfaces.ICashRenditionService
 import com.osaka.cashbalancerapi.services.interfaces.IExchangeRateService
 import com.osaka.cashbalancerapi.services.interfaces.IUserService
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.withContext
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -52,86 +56,61 @@ class CashRenditionService(
         userId: UUID,
         shift: Shift,
         location: Location,
-        salesData: SalesData,
-        additionalData: AdditionalData,
         shiftDate: LocalDate,
-    ): CashRendition {
-        // Obtener usuario (lanza excepción si no existe)
-        val user = safeFindUserById(userId)
+    ): CashRendition =
+        withContext(Dispatchers.IO) {
+            // Obtener usuario (lanza excepción si no existe)
+            val user = safeFindUserById(userId)
 
-        // Crear CashRendition en memoria
-        val cashRendition =
-            CashRendition(
-                user,
-                shift,
-                location,
-                salesData,
-                additionalData,
-                shiftDate = shiftDate,
-            )
+            // Crear CashRendition base (sin sales data ni additional data)
+            val cashRendition =
+                CashRendition(
+                    createdBy = user,
+                    shift = shift,
+                    location = location,
+                    salesData = SalesData(), // Valores por defecto
+                    additionalData = AdditionalData(), // Valores por defecto
+                    shiftDate = shiftDate,
+                )
 
-        // 1. Guardar el CashRenditionEntity primero (SIN las relaciones)
-        val savedEntity = saveCashRenditionEntity(cashRendition.toEntity())
+            // Guardar el CashRenditionEntity
+            val savedEntity = saveCashRenditionEntity(cashRendition.toEntity())
 
-        // 2. Guardar las entidades hijas con el cashRenditionId
-        // Guardar reliefs
-        cashRendition.reliefs.forEach { relief ->
-            reliefRepository.save(relief.toEntity(savedEntity.id!!))
+            // Retornar el rendimiento creado (sin relaciones adicionales, ya que no hay)
+            safeFindById(savedEntity.id!!)
         }
-
-        // Guardar invoice sales
-        salesData.invoiceSales.forEach { invoiceSale ->
-            invoiceSaleRepository.save(invoiceSale.toEntity(savedEntity.id!!))
-        }
-
-        // Guardar delivery sales
-        salesData.deliverySales.forEach { deliverySale ->
-            deliverySaleRepository.save(deliverySale.toEntity(savedEntity.id!!))
-        }
-
-        // Guardar big box sales
-        salesData.bigBoxSales.forEach { bigBoxSale ->
-            bigBoxSaleRepository.save(bigBoxSale.toEntity(savedEntity.id!!))
-        }
-
-        // Guardar credit notes
-        salesData.creditNotes.forEach { creditNote ->
-            creditNoteRepository.save(creditNote.toEntity(savedEntity.id!!))
-        }
-
-        // Guardar payment method transactions
-        cashRendition.paymentMethodTransactions.forEach { transaction ->
-            paymentMethodTransactionRepository.save(transaction.toEntity(savedEntity.id!!))
-        }
-
-        // 3. Recargar con todas las relaciones
-        return safeFindById(savedEntity.id!!)
-    }
 
     /**
      * Carga todas las relaciones de un CashRenditionEntity desde los repositorios
+     * Utiliza coroutines para cargar todas las relaciones en paralelo mejorando el rendimiento
      */
     private suspend fun loadCashRenditionWithRelations(
         entity: CashRenditionEntity,
         user: User,
-    ): CashRendition {
-        val reliefs = reliefRepository.findAllByCashRenditionId(entity.id!!)
-        val invoiceSales = invoiceSaleRepository.findAllByCashRenditionId(entity.id)
-        val deliverySales = deliverySaleRepository.findAllByCashRenditionId(entity.id)
-        val bigBoxSales = bigBoxSaleRepository.findAllByCashRenditionId(entity.id)
-        val creditNotes = creditNoteRepository.findAllByCashRenditionId(entity.id)
-        val paymentMethodTransactions = paymentMethodTransactionRepository.findAllByCashRenditionId(entity.id)
+    ): CashRendition =
+        withContext(Dispatchers.IO) {
+            // Iniciar todas las consultas en paralelo usando async
+            val reliefsDeferred = async { reliefRepository.findAllByCashRenditionId(entity.id!!).toList() }
+            val invoiceSalesDeferred =
+                async { invoiceSaleRepository.findAllByCashRenditionId(entity.id!!).toList() }
+            val deliverySalesDeferred =
+                async { deliverySaleRepository.findAllByCashRenditionId(entity.id!!).toList() }
+            val bigBoxSalesDeferred = async { bigBoxSaleRepository.findAllByCashRenditionId(entity.id!!).toList() }
+            val creditNotesDeferred = async { creditNoteRepository.findAllByCashRenditionId(entity.id!!).toList() }
+            val paymentMethodTransactionsDeferred =
+                async { paymentMethodTransactionRepository.findAllByCashRenditionId(entity.id!!).toList() }
 
-        return entity.toDomain(
-            createdBy = user,
-            reliefs = reliefs,
-            invoiceSales = invoiceSales,
-            deliverySales = deliverySales,
-            bigBoxSales = bigBoxSales,
-            creditNotes = creditNotes,
-            paymentMethodTransactions = paymentMethodTransactions,
-        )
-    }
+            // Esperar a que todas las consultas se completen
+            entity.toDomain(
+                createdBy = user,
+                reliefs = reliefsDeferred.await(),
+                invoiceSales = invoiceSalesDeferred.await(),
+                deliverySales = deliverySalesDeferred.await(),
+                bigBoxSales = bigBoxSalesDeferred.await(),
+                creditNotes = creditNotesDeferred.await(),
+                paymentMethodTransactions = paymentMethodTransactionsDeferred.await(),
+            )
+        }
 
     private suspend fun findById(id: UUID): CashRendition? =
         findCashRenditionEntityById(id)?.let { cashRenditionEntity ->
@@ -145,26 +124,30 @@ class CashRenditionService(
         envelopeNumber: String,
         currency: Currency,
         amount: BigDecimal,
-    ): CashRendition {
-        // Verificar que el rendimiento existe
-        safeFindById(renditionId)
+    ): CashRendition =
+        withContext(Dispatchers.IO) {
+            // Ejecutar verificaciones en paralelo
+            val renditionDeferred = async { safeFindById(renditionId) }
+            val existingReliefDeferred =
+                async { reliefRepository.findByEnvelopeNumberAndCashRenditionId(envelopeNumber, renditionId) }
 
-        // Buscar si ya existe un alivio con el mismo número de sobre
-        val existingRelief = reliefRepository.findByEnvelopeNumberAndCashRenditionId(envelopeNumber, renditionId)
+            // Esperar a que las verificaciones se completen
+            renditionDeferred.await()
+            val existingRelief = existingReliefDeferred.await()
 
-        val relief = createRelief(envelopeNumber, currency, amount)
+            val relief = createRelief(envelopeNumber, currency, amount)
 
-        if (existingRelief != null) {
-            // Si existe, actualizar manteniendo el ID
-            reliefRepository.save(relief.toEntity(renditionId).copy(id = existingRelief.id))
-        } else {
-            // Si no existe, crear nuevo
-            reliefRepository.save(relief.toEntity(renditionId))
+            if (existingRelief != null) {
+                // Si existe, actualizar manteniendo el ID
+                reliefRepository.save(relief.toEntity(renditionId).copy(id = existingRelief.id))
+            } else {
+                // Si no existe, crear nuevo
+                reliefRepository.save(relief.toEntity(renditionId))
+            }
+
+            // Retornar el rendimiento actualizado con todas las relaciones
+            safeFindById(renditionId)
         }
-
-        // Retornar el rendimiento actualizado con todas las relaciones
-        return safeFindById(renditionId)
-    }
 
     private suspend fun createRelief(
         envelopeNumber: String,
@@ -191,103 +174,124 @@ class CashRenditionService(
         type: CreditNoteType,
         amount: BigDecimal,
         notes: String?,
-    ): CashRendition {
-        // Verificar que el rendimiento existe
-        safeFindById(renditionId)
+    ): CashRendition =
+        withContext(Dispatchers.IO) {
+            // Ejecutar verificaciones en paralelo
+            val renditionDeferred = async { safeFindById(renditionId) }
+            val existingCreditNoteDeferred =
+                async { creditNoteRepository.findByTypeAndCashRenditionId(type, renditionId) }
 
-        // Buscar si ya existe una nota de crédito con el mismo tipo
-        val existingCreditNote = creditNoteRepository.findByTypeAndCashRenditionId(type, renditionId)
+            // Esperar a que las verificaciones se completen
+            renditionDeferred.await()
+            val existingCreditNote = existingCreditNoteDeferred.await()
 
-        val creditNote = CreditNote(type, amount, notes)
+            val creditNote = CreditNote(type, amount, notes)
 
-        if (existingCreditNote != null) {
-            // Si existe, actualizar manteniendo el ID
-            creditNoteRepository.save(creditNote.toEntity(renditionId).copy(id = existingCreditNote.id))
-        } else {
-            // Si no existe, crear nuevo
-            creditNoteRepository.save(creditNote.toEntity(renditionId))
+            if (existingCreditNote != null) {
+                // Si existe, actualizar manteniendo el ID
+                creditNoteRepository.save(creditNote.toEntity(renditionId).copy(id = existingCreditNote.id))
+            } else {
+                // Si no existe, crear nuevo
+                creditNoteRepository.save(creditNote.toEntity(renditionId))
+            }
+
+            // Retornar el rendimiento actualizado
+            safeFindById(renditionId)
         }
-
-        // Retornar el rendimiento actualizado
-        return safeFindById(renditionId)
-    }
 
     override suspend fun addOrUpdatePaymentMethodTransaction(
         renditionId: UUID,
         paymentMethodType: PaymentMethodType,
         amount: BigDecimal,
-    ): CashRendition {
-        // Verificar que el rendimiento existe
-        safeFindById(renditionId)
+    ): CashRendition =
+        withContext(Dispatchers.IO) {
+            // Ejecutar verificaciones en paralelo
+            val renditionDeferred = async { safeFindById(renditionId) }
+            val existingTransactionDeferred =
+                async {
+                    paymentMethodTransactionRepository.findByPaymentMethodTypeAndCashRenditionId(
+                        paymentMethodType,
+                        renditionId,
+                    )
+                }
 
-        // Buscar si ya existe una transacción con el mismo tipo de medio de pago
-        val existingTransaction =
-            paymentMethodTransactionRepository.findByPaymentMethodTypeAndCashRenditionId(paymentMethodType, renditionId)
+            // Esperar a que las verificaciones se completen
+            renditionDeferred.await()
+            val existingTransaction = existingTransactionDeferred.await()
 
-        val transaction = PaymentMethodTransaction(paymentMethodType, amount)
+            val transaction = PaymentMethodTransaction(paymentMethodType, amount)
 
-        if (existingTransaction != null) {
-            // Si existe, actualizar manteniendo el ID
-            paymentMethodTransactionRepository.save(transaction.toEntity(renditionId).copy(id = existingTransaction.id))
-        } else {
-            // Si no existe, crear nuevo
-            paymentMethodTransactionRepository.save(transaction.toEntity(renditionId))
+            if (existingTransaction != null) {
+                // Si existe, actualizar manteniendo el ID
+                paymentMethodTransactionRepository.save(
+                    transaction.toEntity(renditionId).copy(id = existingTransaction.id),
+                )
+            } else {
+                // Si no existe, crear nuevo
+                paymentMethodTransactionRepository.save(transaction.toEntity(renditionId))
+            }
+
+            // Retornar el rendimiento actualizado
+            safeFindById(renditionId)
         }
-
-        // Retornar el rendimiento actualizado
-        return safeFindById(renditionId)
-    }
 
     override suspend fun addOrUpdateInvoiceSale(
         renditionId: UUID,
         invoiceType: InvoiceType,
         amount: BigDecimal,
-    ): CashRendition {
-        // Verificar que el rendimiento existe
-        safeFindById(renditionId)
+    ): CashRendition =
+        withContext(Dispatchers.IO) {
+            // Ejecutar verificaciones en paralelo
+            val renditionDeferred = async { safeFindById(renditionId) }
+            val existingInvoiceSaleDeferred =
+                async { invoiceSaleRepository.findByTypeAndCashRenditionId(invoiceType, renditionId) }
 
-        // Buscar si ya existe una venta con factura del mismo tipo
-        val existingInvoiceSale = invoiceSaleRepository.findByTypeAndCashRenditionId(invoiceType, renditionId)
+            // Esperar a que las verificaciones se completen
+            renditionDeferred.await()
+            val existingInvoiceSale = existingInvoiceSaleDeferred.await()
 
-        val invoiceSale = InvoiceSale(invoiceType, amount)
+            val invoiceSale = InvoiceSale(invoiceType, amount)
 
-        if (existingInvoiceSale != null) {
-            // Si existe, actualizar manteniendo el ID
-            invoiceSaleRepository.save(invoiceSale.toEntity(renditionId).copy(id = existingInvoiceSale.id))
-        } else {
-            // Si no existe, crear nuevo
-            invoiceSaleRepository.save(invoiceSale.toEntity(renditionId))
+            if (existingInvoiceSale != null) {
+                // Si existe, actualizar manteniendo el ID
+                invoiceSaleRepository.save(invoiceSale.toEntity(renditionId).copy(id = existingInvoiceSale.id))
+            } else {
+                // Si no existe, crear nuevo
+                invoiceSaleRepository.save(invoiceSale.toEntity(renditionId))
+            }
+
+            // Retornar el rendimiento actualizado
+            safeFindById(renditionId)
         }
-
-        // Retornar el rendimiento actualizado
-        return safeFindById(renditionId)
-    }
 
     override suspend fun addOrUpdateDeliverySale(
         renditionId: UUID,
         deliveryPlatform: DeliveryPlatform,
         amount: BigDecimal,
-    ): CashRendition {
-        // Verificar que el rendimiento existe
-        safeFindById(renditionId)
+    ): CashRendition =
+        withContext(Dispatchers.IO) {
+            // Ejecutar verificaciones en paralelo
+            val renditionDeferred = async { safeFindById(renditionId) }
+            val existingDeliverySaleDeferred =
+                async { deliverySaleRepository.findByPlatformAndCashRenditionId(deliveryPlatform, renditionId) }
 
-        // Buscar si ya existe una venta por delivery de la misma plataforma
-        val existingDeliverySale =
-            deliverySaleRepository.findByPlatformAndCashRenditionId(deliveryPlatform, renditionId)
+            // Esperar a que las verificaciones se completen
+            renditionDeferred.await()
+            val existingDeliverySale = existingDeliverySaleDeferred.await()
 
-        val deliverySale = DeliverySale(deliveryPlatform, amount)
+            val deliverySale = DeliverySale(deliveryPlatform, amount)
 
-        if (existingDeliverySale != null) {
-            // Si existe, actualizar manteniendo el ID
-            deliverySaleRepository.save(deliverySale.toEntity(renditionId).copy(id = existingDeliverySale.id))
-        } else {
-            // Si no existe, crear nuevo
-            deliverySaleRepository.save(deliverySale.toEntity(renditionId))
+            if (existingDeliverySale != null) {
+                // Si existe, actualizar manteniendo el ID
+                deliverySaleRepository.save(deliverySale.toEntity(renditionId).copy(id = existingDeliverySale.id))
+            } else {
+                // Si no existe, crear nuevo
+                deliverySaleRepository.save(deliverySale.toEntity(renditionId))
+            }
+
+            // Retornar el rendimiento actualizado
+            safeFindById(renditionId)
         }
-
-        // Retornar el rendimiento actualizado
-        return safeFindById(renditionId)
-    }
 
     private suspend fun saveCashRenditionEntity(cashRenditionEntity: CashRenditionEntity): CashRenditionEntity =
         cashRenditionRepository.save(cashRenditionEntity)
@@ -295,4 +299,76 @@ class CashRenditionService(
     private suspend fun findCashRenditionEntityById(id: UUID): CashRenditionEntity? = cashRenditionRepository.findById(id)
 
     private suspend fun safeFindUserById(userId: UUID): User = userService.safeFindById(userId)
+
+    override suspend fun updateInitialBalance(
+        renditionId: UUID,
+        amount: BigDecimal,
+    ): CashRendition =
+        withContext(Dispatchers.IO) {
+            val entity = findCashRenditionEntityById(renditionId) ?: throw CashRenditionNotFoundException(renditionId)
+            cashRenditionRepository.save(entity.copy(initialBalance = amount))
+            safeFindById(renditionId)
+        }
+
+    override suspend fun updateMarketing(
+        renditionId: UUID,
+        amount: BigDecimal,
+    ): CashRendition =
+        withContext(Dispatchers.IO) {
+            val entity = findCashRenditionEntityById(renditionId) ?: throw CashRenditionNotFoundException(renditionId)
+            cashRenditionRepository.save(entity.copy(marketing = amount))
+            safeFindById(renditionId)
+        }
+
+    override suspend fun updateCurrentAccount(
+        renditionId: UUID,
+        amount: BigDecimal,
+    ): CashRendition =
+        withContext(Dispatchers.IO) {
+            val entity = findCashRenditionEntityById(renditionId) ?: throw CashRenditionNotFoundException(renditionId)
+            cashRenditionRepository.save(entity.copy(currentAccount = amount))
+            safeFindById(renditionId)
+        }
+
+    override suspend fun updateLoungeData(
+        renditionId: UUID,
+        otoshis: UInt,
+    ): CashRendition =
+        withContext(Dispatchers.IO) {
+            val entity = findCashRenditionEntityById(renditionId) ?: throw CashRenditionNotFoundException(renditionId)
+            cashRenditionRepository.save(entity.copy(salonOtoshis = otoshis))
+            safeFindById(renditionId)
+        }
+
+    override suspend fun updateDeliveryOsakaData(
+        renditionId: UUID,
+        ohashis: UInt,
+        orders: UInt,
+    ): CashRendition =
+        withContext(Dispatchers.IO) {
+            val entity = findCashRenditionEntityById(renditionId) ?: throw CashRenditionNotFoundException(renditionId)
+            cashRenditionRepository.save(
+                entity.copy(
+                    delyOskOhashis = ohashis,
+                    delyOskOrders = orders,
+                ),
+            )
+            safeFindById(renditionId)
+        }
+
+    override suspend fun updateDeliveryNoriTacoData(
+        renditionId: UUID,
+        ohashis: UInt,
+        orders: UInt,
+    ): CashRendition =
+        withContext(Dispatchers.IO) {
+            val entity = findCashRenditionEntityById(renditionId) ?: throw CashRenditionNotFoundException(renditionId)
+            cashRenditionRepository.save(
+                entity.copy(
+                    delyNtOhashis = ohashis,
+                    delyNtOrders = orders,
+                ),
+            )
+            safeFindById(renditionId)
+        }
 }

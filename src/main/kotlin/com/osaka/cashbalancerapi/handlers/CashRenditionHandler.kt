@@ -9,6 +9,12 @@ import com.osaka.cashbalancerapi.requests.DeliverySaleRequest
 import com.osaka.cashbalancerapi.requests.InvoiceSaleRequest
 import com.osaka.cashbalancerapi.requests.PaymentMethodTransactionRequest
 import com.osaka.cashbalancerapi.requests.ReliefRequest
+import com.osaka.cashbalancerapi.requests.UpdateCurrentAccountRequest
+import com.osaka.cashbalancerapi.requests.UpdateDeliveryNoriTacoDataRequest
+import com.osaka.cashbalancerapi.requests.UpdateDeliveryOsakaDataRequest
+import com.osaka.cashbalancerapi.requests.UpdateInitialBalanceRequest
+import com.osaka.cashbalancerapi.requests.UpdateLoungeDataRequest
+import com.osaka.cashbalancerapi.requests.UpdateMarketingRequest
 import com.osaka.cashbalancerapi.services.interfaces.ICashRenditionService
 import com.osaka.cashbalancerapi.utils.constants.keys.PathVariableKey
 import jakarta.validation.Validator
@@ -35,8 +41,6 @@ class CashRenditionHandler(
                 userId = createRequest.userId,
                 shift = createRequest.shift,
                 location = createRequest.location,
-                salesData = createRequest.salesData,
-                additionalData = createRequest.additionalData,
                 shiftDate = createRequest.shiftDate,
             )
 
@@ -152,6 +156,110 @@ class CashRenditionHandler(
                 renditionId = id,
                 deliveryPlatform = deliverySaleRequest.platform,
                 amount = deliverySaleRequest.amount,
+            )
+
+        return ServerResponse.ok().bodyValueAndAwait(cashRendition.toResponse())
+    }
+
+    /**
+     * Actualiza el saldo inicial del rendimiento de caja
+     * PUT /cash-renditions/{id}/initial-balance
+     */
+    suspend fun updateInitialBalance(request: ServerRequest): ServerResponse {
+        val id = request.getUUIDPathVariable(PathVariableKey.ID)
+        val updateRequest = request.awaitBodyAndValidate<UpdateInitialBalanceRequest>(validator)
+
+        val cashRendition =
+            cashRenditionService.updateInitialBalance(
+                renditionId = id,
+                amount = updateRequest.amount,
+            )
+
+        return ServerResponse.ok().bodyValueAndAwait(cashRendition.toResponse())
+    }
+
+    /**
+     * Actualiza el monto de marketing del rendimiento de caja
+     * PUT /cash-renditions/{id}/marketing
+     */
+    suspend fun updateMarketing(request: ServerRequest): ServerResponse {
+        val id = request.getUUIDPathVariable(PathVariableKey.ID)
+        val updateRequest = request.awaitBodyAndValidate<UpdateMarketingRequest>(validator)
+
+        val cashRendition =
+            cashRenditionService.updateMarketing(
+                renditionId = id,
+                amount = updateRequest.amount,
+            )
+
+        return ServerResponse.ok().bodyValueAndAwait(cashRendition.toResponse())
+    }
+
+    /**
+     * Actualiza el monto de cuenta corriente del rendimiento de caja
+     * PUT /cash-renditions/{id}/current-account
+     */
+    suspend fun updateCurrentAccount(request: ServerRequest): ServerResponse {
+        val id = request.getUUIDPathVariable(PathVariableKey.ID)
+        val updateRequest = request.awaitBodyAndValidate<UpdateCurrentAccountRequest>(validator)
+
+        val cashRendition =
+            cashRenditionService.updateCurrentAccount(
+                renditionId = id,
+                amount = updateRequest.amount,
+            )
+
+        return ServerResponse.ok().bodyValueAndAwait(cashRendition.toResponse())
+    }
+
+    /**
+     * Actualiza los datos del salón/lounge
+     * PUT /cash-renditions/{id}/lounge-data
+     */
+    suspend fun updateLoungeData(request: ServerRequest): ServerResponse {
+        val id = request.getUUIDPathVariable(PathVariableKey.ID)
+        val updateRequest = request.awaitBodyAndValidate<UpdateLoungeDataRequest>(validator)
+
+        val cashRendition =
+            cashRenditionService.updateLoungeData(
+                renditionId = id,
+                otoshis = updateRequest.otoshis,
+            )
+
+        return ServerResponse.ok().bodyValueAndAwait(cashRendition.toResponse())
+    }
+
+    /**
+     * Actualiza los datos de delivery Osaka
+     * PUT /cash-renditions/{id}/delivery-osaka-data
+     */
+    suspend fun updateDeliveryOsakaData(request: ServerRequest): ServerResponse {
+        val id = request.getUUIDPathVariable(PathVariableKey.ID)
+        val updateRequest = request.awaitBodyAndValidate<UpdateDeliveryOsakaDataRequest>(validator)
+
+        val cashRendition =
+            cashRenditionService.updateDeliveryOsakaData(
+                renditionId = id,
+                ohashis = updateRequest.ohashis,
+                orders = updateRequest.orders,
+            )
+
+        return ServerResponse.ok().bodyValueAndAwait(cashRendition.toResponse())
+    }
+
+    /**
+     * Actualiza los datos de delivery Nori Taco
+     * PUT /cash-renditions/{id}/delivery-nori-taco-data
+     */
+    suspend fun updateDeliveryNoriTacoData(request: ServerRequest): ServerResponse {
+        val id = request.getUUIDPathVariable(PathVariableKey.ID)
+        val updateRequest = request.awaitBodyAndValidate<UpdateDeliveryNoriTacoDataRequest>(validator)
+
+        val cashRendition =
+            cashRenditionService.updateDeliveryNoriTacoData(
+                renditionId = id,
+                ohashis = updateRequest.ohashis,
+                orders = updateRequest.orders,
             )
 
         return ServerResponse.ok().bodyValueAndAwait(cashRendition.toResponse())
