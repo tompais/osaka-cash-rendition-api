@@ -2,8 +2,6 @@ package com.osaka.cashbalancerapi.models
 
 import com.osaka.cashbalancerapi.enums.Location
 import com.osaka.cashbalancerapi.enums.Shift
-import jakarta.validation.Valid
-import jakarta.validation.constraints.PastOrPresent
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
@@ -19,19 +17,12 @@ data class CashRendition(
     /** Local donde se realizó el rendimiento */
     val location: Location,
     /** Datos de ventas del turno */
-    @field:Valid
-    val salesData: SalesData,
-    /** Datos adicionales cuantitativos (no monetarios) */
-    @field:Valid
-    val additionalData: AdditionalData = AdditionalData(),
+    val salesData: SalesData = SalesData(),
     /** Lista de alivios realizados durante el turno */
-    @field:Valid
     val reliefs: List<Relief> = emptyList(),
     /** Lista de transacciones por medio de pago */
-    @field:Valid
     val paymentMethodTransactions: List<PaymentMethodTransaction> = emptyList(),
     /** Fecha del turno que se está rindiendo */
-    @field:PastOrPresent(message = "Shift date cannot be in the future")
     val shiftDate: LocalDate = LocalDate.now(),
     val id: UUID = UUID.randomUUID(),
 ) {

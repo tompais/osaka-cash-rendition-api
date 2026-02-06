@@ -26,9 +26,11 @@ data class CashRenditionEntity(
     val marketing: BigDecimal = BigDecimal.ZERO,
     @Column("current_account")
     val currentAccount: BigDecimal = BigDecimal.ZERO,
-    // AdditionalData fields
-    @Column("salon_otoshis")
-    val salonOtoshis: UInt = 0u,
+    // Additional Data fields (now part of SalesData)
+    @Column("lounge_otoshis")
+    val loungeOtoshis: UInt = 0u,
+    @Column("lounge_ohashis")
+    val loungeOhashis: UInt = 0u,
     @Column("dely_osk_ohashis")
     val delyOskOhashis: UInt = 0u,
     @Column("dely_osk_orders")

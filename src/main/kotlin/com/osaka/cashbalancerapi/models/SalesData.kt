@@ -1,35 +1,33 @@
 package com.osaka.cashbalancerapi.models
 
-import jakarta.validation.Valid
-import jakarta.validation.constraints.PositiveOrZero
 import java.math.BigDecimal
 
 /**
  * Datos de venta del rendimiento de caja
  * Contiene todos los tipos de ventas registradas durante el turno
+ * e información cuantitativa adicional (no monetaria) sobre el servicio
  */
 data class SalesData(
     /** Ventas con facturas (A y B) - Máximo 2 elementos */
-    @field:Valid
     val invoiceSales: List<InvoiceSale> = emptyList(),
     /** Ventas por plataformas de delivery */
-    @field:Valid
     val deliverySales: List<DeliverySale> = emptyList(),
     /** Ventas de vouchers BigBox */
-    @field:Valid
     val bigBoxSales: List<BigBoxSale> = emptyList(),
     /** Notas de crédito (anulaciones de ventas) */
-    @field:Valid
     val creditNotes: List<CreditNote> = emptyList(),
     /** Saldo inicial de caja */
-    @field:PositiveOrZero(message = "Initial balance must be greater than or equal to zero")
     val initialBalance: BigDecimal = BigDecimal.ZERO,
     /** Ventas en negro (sin factura) - Marketing */
-    @field:PositiveOrZero(message = "Marketing amount must be greater than or equal to zero")
     val marketing: BigDecimal = BigDecimal.ZERO,
     /** Ventas en cuenta corriente */
-    @field:PositiveOrZero(message = "Current account amount must be greater than or equal to zero")
     val currentAccount: BigDecimal = BigDecimal.ZERO,
+    /** Datos del lounge (salón/comedor) */
+    val loungeData: LoungeData = LoungeData(),
+    /** Datos de delivery Osaka */
+    val deliveryOsakaData: DeliveryOsakaData = DeliveryOsakaData(),
+    /** Datos de delivery Nori Taco */
+    val deliveryNoriTacoData: DeliveryNoriTacoData = DeliveryNoriTacoData(),
 ) {
     /**
      * Calcula el total de ventas con facturas

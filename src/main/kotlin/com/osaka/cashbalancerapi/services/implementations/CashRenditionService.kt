@@ -10,7 +10,6 @@ import com.osaka.cashbalancerapi.enums.Shift
 import com.osaka.cashbalancerapi.errors.exceptions.CashRenditionNotFoundException
 import com.osaka.cashbalancerapi.extensions.toDomain
 import com.osaka.cashbalancerapi.extensions.toEntity
-import com.osaka.cashbalancerapi.models.AdditionalData
 import com.osaka.cashbalancerapi.models.CashRendition
 import com.osaka.cashbalancerapi.models.CreditNote
 import com.osaka.cashbalancerapi.models.DeliverySale
@@ -18,7 +17,6 @@ import com.osaka.cashbalancerapi.models.ExchangeRate
 import com.osaka.cashbalancerapi.models.InvoiceSale
 import com.osaka.cashbalancerapi.models.PaymentMethodTransaction
 import com.osaka.cashbalancerapi.models.Relief
-import com.osaka.cashbalancerapi.models.SalesData
 import com.osaka.cashbalancerapi.models.User
 import com.osaka.cashbalancerapi.postgresql.r2dbc.entities.CashRenditionEntity
 import com.osaka.cashbalancerapi.postgresql.r2dbc.repositories.interfaces.IBigBoxSaleRepository
@@ -62,14 +60,12 @@ class CashRenditionService(
             // Obtener usuario (lanza excepción si no existe)
             val user = safeFindUserById(userId)
 
-            // Crear CashRendition base (sin sales data ni additional data)
+            // Crear CashRendition base (sin sales data completo, solo valores por defecto)
             val cashRendition =
                 CashRendition(
                     createdBy = user,
                     shift = shift,
                     location = location,
-                    salesData = SalesData(), // Valores por defecto
-                    additionalData = AdditionalData(), // Valores por defecto
                     shiftDate = shiftDate,
                 )
 
@@ -333,10 +329,16 @@ class CashRenditionService(
     override suspend fun updateLoungeData(
         renditionId: UUID,
         otoshis: UInt,
+        ohashis: UInt,
     ): CashRendition =
         withContext(Dispatchers.IO) {
             val entity = findCashRenditionEntityById(renditionId) ?: throw CashRenditionNotFoundException(renditionId)
-            cashRenditionRepository.save(entity.copy(salonOtoshis = otoshis))
+            cashRenditionRepository.save(
+                entity.copy(
+                    loungeOtoshis = otoshis,
+                    loungeOhashis = ohashis,
+                ),
+            )
             safeFindById(renditionId)
         }
 

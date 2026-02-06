@@ -1,7 +1,6 @@
 package com.osaka.cashbalancerapi.models
 
 import com.osaka.cashbalancerapi.enums.PaymentMethodType
-import jakarta.validation.constraints.Positive
 import java.math.BigDecimal
 import java.util.UUID
 
@@ -11,7 +10,6 @@ import java.util.UUID
  */
 data class PaymentMethodTransaction(
     val paymentMethodType: PaymentMethodType,
-    @field:Positive(message = "Amount must be greater than zero")
     val amount: BigDecimal,
     val id: UUID = UUID.randomUUID(),
 )

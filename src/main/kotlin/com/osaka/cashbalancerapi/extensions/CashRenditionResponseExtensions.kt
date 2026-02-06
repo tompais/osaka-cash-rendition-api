@@ -11,7 +11,6 @@ fun CashRendition.toResponse() =
         location = location,
         shiftDate = shiftDate,
         salesData = salesData,
-        additionalData = additionalData,
         reliefs = reliefs,
         paymentMethodTransactions = paymentMethodTransactions,
         totalPaymentMethods = totalPaymentMethods(),

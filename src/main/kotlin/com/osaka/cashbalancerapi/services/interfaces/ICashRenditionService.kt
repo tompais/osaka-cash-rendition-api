@@ -159,15 +159,17 @@ interface ICashRenditionService {
     ): CashRendition
 
     /**
-     * Actualiza los datos adicionales del salón/lounge
+     * Actualiza los datos adicionales del lounge (salón/comedor)
      * @param renditionId ID del rendimiento de caja
      * @param otoshis Cantidad de cubiertos/personas
+     * @param ohashis Cantidad de comensales (ohashis)
      * @return El rendimiento actualizado
      * @throws CashRenditionNotFoundException si el rendimiento no existe
      */
     suspend fun updateLoungeData(
         renditionId: UUID,
         otoshis: UInt,
+        ohashis: UInt,
     ): CashRendition
 
     /**

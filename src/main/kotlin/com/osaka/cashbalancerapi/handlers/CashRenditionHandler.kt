@@ -224,6 +224,7 @@ class CashRenditionHandler(
             cashRenditionService.updateLoungeData(
                 renditionId = id,
                 otoshis = updateRequest.otoshis,
+                ohashis = updateRequest.ohashis,
             )
 
         return ServerResponse.ok().bodyValueAndAwait(cashRendition.toResponse())

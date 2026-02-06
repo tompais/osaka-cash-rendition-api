@@ -1,10 +1,9 @@
 package com.osaka.cashbalancerapi.extensions
 
-import com.osaka.cashbalancerapi.models.AdditionalData
 import com.osaka.cashbalancerapi.models.CashRendition
 import com.osaka.cashbalancerapi.models.DeliveryNoriTacoData
 import com.osaka.cashbalancerapi.models.DeliveryOsakaData
-import com.osaka.cashbalancerapi.models.DiningRoomData
+import com.osaka.cashbalancerapi.models.LoungeData
 import com.osaka.cashbalancerapi.models.SalesData
 import com.osaka.cashbalancerapi.models.User
 import com.osaka.cashbalancerapi.postgresql.r2dbc.entities.BigBoxSaleEntity
@@ -24,11 +23,12 @@ fun CashRendition.toEntity() =
         initialBalance = salesData.initialBalance,
         marketing = salesData.marketing,
         currentAccount = salesData.currentAccount,
-        salonOtoshis = additionalData.diningRoomData.otoshis,
-        delyOskOhashis = additionalData.deliveryOsakaData.ohashis,
-        delyOskOrders = additionalData.deliveryOsakaData.orders,
-        delyNtOrders = additionalData.deliveryNoriTacoData.orders,
-        delyNtOhashis = additionalData.deliveryNoriTacoData.ohashis,
+        loungeOtoshis = salesData.loungeData.otoshis,
+        loungeOhashis = salesData.loungeData.ohashis,
+        delyOskOhashis = salesData.deliveryOsakaData.ohashis,
+        delyOskOrders = salesData.deliveryOsakaData.orders,
+        delyNtOrders = salesData.deliveryNoriTacoData.orders,
+        delyNtOhashis = salesData.deliveryNoriTacoData.ohashis,
     )
 
 fun CashRenditionEntity.toDomain(
@@ -52,10 +52,7 @@ fun CashRenditionEntity.toDomain(
             initialBalance = initialBalance,
             marketing = marketing,
             currentAccount = currentAccount,
-        ),
-    additionalData =
-        AdditionalData(
-            diningRoomData = DiningRoomData(otoshis = salonOtoshis),
+            loungeData = LoungeData(otoshis = loungeOtoshis, ohashis = loungeOhashis),
             deliveryOsakaData = DeliveryOsakaData(ohashis = delyOskOhashis, orders = delyOskOrders),
             deliveryNoriTacoData = DeliveryNoriTacoData(orders = delyNtOrders, ohashis = delyNtOhashis),
         ),
