@@ -1,5 +1,6 @@
 package com.osaka.cashbalancerapi.models
 
+import com.osaka.cashbalancerapi.enums.Currency
 import com.osaka.cashbalancerapi.enums.Location
 import com.osaka.cashbalancerapi.enums.Shift
 import java.math.BigDecimal
@@ -18,6 +19,8 @@ data class CashRendition(
     val location: Location,
     /** Datos de ventas del turno */
     val salesData: SalesData = SalesData(),
+    /** Tasas de cambio para este rendimiento (solo si hay alivios en moneda extranjera) */
+    val exchangeRates: ExchangeRates = ExchangeRates(),
     /** Lista de alivios realizados durante el turno */
     val reliefs: List<Relief> = emptyList(),
     /** Lista de transacciones por medio de pago */
@@ -36,12 +39,19 @@ data class CashRendition(
 
     /**
      * Calcula el total de alivios en pesos argentinos
-     * Usa el snapshot del tipo de cambio almacenado en cada alivio
+     * Usa las tasas de cambio del rendimiento (exchangeRates)
      */
     fun totalReliefsInArs(): BigDecimal =
-        reliefs
-            .map(Relief::amountInArs)
-            .fold(BigDecimal.ZERO) { acc, amount -> acc.add(amount) }
+        reliefs.fold(BigDecimal.ZERO) { acc, relief ->
+            val rateToArs =
+                when (relief.currency) {
+                    Currency.ARS -> BigDecimal.ONE
+                    Currency.USD -> exchangeRates.usdToArs
+                    Currency.BRL -> exchangeRates.brlToArs
+                    Currency.EUR -> exchangeRates.eurToArs
+                }
+            acc.add(relief.amount.multiply(rateToArs))
+        }
 
     /**
      * Calcula el total de efectivo disponible en caja

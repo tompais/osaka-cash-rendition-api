@@ -3,6 +3,7 @@ package com.osaka.cashbalancerapi.extensions
 import com.osaka.cashbalancerapi.models.CashRendition
 import com.osaka.cashbalancerapi.models.DeliveryNoriTacoData
 import com.osaka.cashbalancerapi.models.DeliveryOsakaData
+import com.osaka.cashbalancerapi.models.ExchangeRates
 import com.osaka.cashbalancerapi.models.LoungeData
 import com.osaka.cashbalancerapi.models.SalesData
 import com.osaka.cashbalancerapi.models.User
@@ -29,6 +30,9 @@ fun CashRendition.toEntity() =
         delyOskOrders = salesData.deliveryOsakaData.orders,
         delyNtOrders = salesData.deliveryNoriTacoData.orders,
         delyNtOhashis = salesData.deliveryNoriTacoData.ohashis,
+        usdToArs = exchangeRates.usdToArs,
+        brlToArs = exchangeRates.brlToArs,
+        eurToArs = exchangeRates.eurToArs,
     )
 
 fun CashRenditionEntity.toDomain(
@@ -55,6 +59,12 @@ fun CashRenditionEntity.toDomain(
             loungeData = LoungeData(otoshis = loungeOtoshis, ohashis = loungeOhashis),
             deliveryOsakaData = DeliveryOsakaData(ohashis = delyOskOhashis, orders = delyOskOrders),
             deliveryNoriTacoData = DeliveryNoriTacoData(orders = delyNtOrders, ohashis = delyNtOhashis),
+        ),
+    exchangeRates =
+        ExchangeRates(
+            usdToArs = usdToArs,
+            brlToArs = brlToArs,
+            eurToArs = eurToArs,
         ),
     reliefs = reliefs.map(ReliefEntity::toDomain),
     paymentMethodTransactions = paymentMethodTransactions.map(PaymentMethodTransactionEntity::toDomain),

@@ -39,6 +39,13 @@ data class CashRenditionEntity(
     val delyNtOrders: UInt = 0u,
     @Column("dely_nt_ohashis")
     val delyNtOhashis: UInt = 0u,
+    // Exchange Rates fields (specific to this cash rendition)
+    @Column("usd_to_ars")
+    val usdToArs: BigDecimal = BigDecimal.ONE,
+    @Column("brl_to_ars")
+    val brlToArs: BigDecimal = BigDecimal.ONE,
+    @Column("eur_to_ars")
+    val eurToArs: BigDecimal = BigDecimal.ONE,
     @Id
     @Column("id")
     val id: UUID? = null,

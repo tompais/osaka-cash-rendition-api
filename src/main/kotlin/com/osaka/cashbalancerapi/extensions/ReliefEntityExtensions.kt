@@ -9,8 +9,6 @@ fun Relief.toEntity(cashRenditionId: UUID) =
         envelopeNumber = envelopeNumber,
         amount = amount,
         currency = currency,
-        exchangeRateSnapshot = exchangeRateSnapshot,
-        exchangeRateId = exchangeRateId,
         cashRenditionId = cashRenditionId,
         id = id,
     )
@@ -20,7 +18,5 @@ fun ReliefEntity.toDomain() =
         envelopeNumber = envelopeNumber,
         amount = amount,
         currency = currency,
-        exchangeRateSnapshot = exchangeRateSnapshot,
-        exchangeRateId = exchangeRateId,
         id = id!!,
     )

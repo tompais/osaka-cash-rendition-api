@@ -15,10 +15,6 @@ data class ReliefEntity(
     val amount: BigDecimal,
     @Column("currency")
     val currency: Currency = Currency.ARS,
-    @Column("exchange_rate_snapshot")
-    val exchangeRateSnapshot: BigDecimal,
-    @Column("exchange_rate_id")
-    val exchangeRateId: UUID,
     @Column("cash_rendition_id")
     val cashRenditionId: UUID,
     @Id

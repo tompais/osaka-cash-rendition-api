@@ -13,7 +13,6 @@ import com.osaka.cashbalancerapi.extensions.toEntity
 import com.osaka.cashbalancerapi.models.CashRendition
 import com.osaka.cashbalancerapi.models.CreditNote
 import com.osaka.cashbalancerapi.models.DeliverySale
-import com.osaka.cashbalancerapi.models.ExchangeRate
 import com.osaka.cashbalancerapi.models.InvoiceSale
 import com.osaka.cashbalancerapi.models.PaymentMethodTransaction
 import com.osaka.cashbalancerapi.models.Relief
@@ -27,7 +26,6 @@ import com.osaka.cashbalancerapi.postgresql.r2dbc.repositories.interfaces.IInvoi
 import com.osaka.cashbalancerapi.postgresql.r2dbc.repositories.interfaces.IPaymentMethodTransactionRepository
 import com.osaka.cashbalancerapi.postgresql.r2dbc.repositories.interfaces.IReliefRepository
 import com.osaka.cashbalancerapi.services.interfaces.ICashRenditionService
-import com.osaka.cashbalancerapi.services.interfaces.IExchangeRateService
 import com.osaka.cashbalancerapi.services.interfaces.IUserService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -48,7 +46,6 @@ class CashRenditionService(
     private val creditNoteRepository: ICreditNoteRepository,
     private val paymentMethodTransactionRepository: IPaymentMethodTransactionRepository,
     private val userService: IUserService,
-    private val exchangeRateService: IExchangeRateService,
 ) : ICashRenditionService {
     override suspend fun create(
         userId: UUID,
@@ -131,7 +128,12 @@ class CashRenditionService(
             renditionDeferred.await()
             val existingRelief = existingReliefDeferred.await()
 
-            val relief = createRelief(envelopeNumber, currency, amount)
+            val relief =
+                Relief(
+                    envelopeNumber = envelopeNumber,
+                    amount = amount,
+                    currency = currency,
+                )
 
             if (existingRelief != null) {
                 // Si existe, actualizar manteniendo el ID
@@ -144,24 +146,6 @@ class CashRenditionService(
             // Retornar el rendimiento actualizado con todas las relaciones
             safeFindById(renditionId)
         }
-
-    private suspend fun createRelief(
-        envelopeNumber: String,
-        currency: Currency,
-        amount: BigDecimal,
-    ): Relief =
-        findExchangeRateByCurrency(currency).let { exchangeRate ->
-            Relief.create(
-                envelopeNumber,
-                amount,
-                currency,
-                exchangeRate.rateToArs,
-                exchangeRate.id,
-            )
-        }
-
-    private suspend fun findExchangeRateByCurrency(currency: Currency): ExchangeRate =
-        exchangeRateService.findActiveRateByCurrency(currency)
 
     override suspend fun getReliefsFromRendition(renditionId: UUID): CashRendition = safeFindById(renditionId)
 
