@@ -173,28 +173,28 @@ interface ICashRenditionService {
     ): CashRendition
 
     /**
-     * Actualiza los datos adicionales del delivery Osaka
+     * Actualiza los datos de pedidos de Osaka
      * @param renditionId ID del rendimiento de caja
      * @param ohashis Cantidad de comensales
      * @param orders Cantidad de pedidos
      * @return El rendimiento actualizado
      * @throws CashRenditionNotFoundException si el rendimiento no existe
      */
-    suspend fun updateDeliveryOsakaData(
+    suspend fun updateOsakaOrders(
         renditionId: UUID,
         ohashis: UInt,
         orders: UInt,
     ): CashRendition
 
     /**
-     * Actualiza los datos adicionales del delivery Nori Taco
+     * Actualiza los datos de pedidos de Nori Taco
      * @param renditionId ID del rendimiento de caja
      * @param ohashis Cantidad de comensales
      * @param orders Cantidad de pedidos
      * @return El rendimiento actualizado
      * @throws CashRenditionNotFoundException si el rendimiento no existe
      */
-    suspend fun updateDeliveryNoriTacoData(
+    suspend fun updateNoriTacoOrders(
         renditionId: UUID,
         ohashis: UInt,
         orders: UInt,

@@ -326,7 +326,7 @@ class CashRenditionService(
             safeFindById(renditionId)
         }
 
-    override suspend fun updateDeliveryOsakaData(
+    override suspend fun updateOsakaOrders(
         renditionId: UUID,
         ohashis: UInt,
         orders: UInt,
@@ -335,14 +335,14 @@ class CashRenditionService(
             val entity = findCashRenditionEntityById(renditionId) ?: throw CashRenditionNotFoundException(renditionId)
             cashRenditionRepository.save(
                 entity.copy(
-                    delyOskOhashis = ohashis,
-                    delyOskOrders = orders,
+                    osakaOhashis = ohashis,
+                    osakaOrders = orders,
                 ),
             )
             safeFindById(renditionId)
         }
 
-    override suspend fun updateDeliveryNoriTacoData(
+    override suspend fun updateNoriTacoOrders(
         renditionId: UUID,
         ohashis: UInt,
         orders: UInt,
@@ -351,8 +351,8 @@ class CashRenditionService(
             val entity = findCashRenditionEntityById(renditionId) ?: throw CashRenditionNotFoundException(renditionId)
             cashRenditionRepository.save(
                 entity.copy(
-                    delyNtOhashis = ohashis,
-                    delyNtOrders = orders,
+                    noriTacoOhashis = ohashis,
+                    noriTacoOrders = orders,
                 ),
             )
             safeFindById(renditionId)

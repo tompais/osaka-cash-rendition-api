@@ -31,14 +31,14 @@ data class CashRenditionEntity(
     val loungeOtoshis: UInt = 0u,
     @Column("lounge_ohashis")
     val loungeOhashis: UInt = 0u,
-    @Column("dely_osk_ohashis")
-    val delyOskOhashis: UInt = 0u,
-    @Column("dely_osk_orders")
-    val delyOskOrders: UInt = 0u,
-    @Column("dely_nt_orders")
-    val delyNtOrders: UInt = 0u,
-    @Column("dely_nt_ohashis")
-    val delyNtOhashis: UInt = 0u,
+    @Column("osaka_ohashis")
+    val osakaOhashis: UInt = 0u,
+    @Column("osaka_orders")
+    val osakaOrders: UInt = 0u,
+    @Column("nori_taco_orders")
+    val noriTacoOrders: UInt = 0u,
+    @Column("nori_taco_ohashis")
+    val noriTacoOhashis: UInt = 0u,
     // Exchange Rates fields (specific to this cash rendition)
     @Column("usd_to_ars")
     val usdToArs: BigDecimal = BigDecimal.ONE,

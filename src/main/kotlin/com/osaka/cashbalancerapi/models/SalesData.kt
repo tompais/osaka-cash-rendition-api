@@ -24,10 +24,10 @@ data class SalesData(
     val currentAccount: BigDecimal = BigDecimal.ZERO,
     /** Datos del lounge (salón/comedor) */
     val loungeData: LoungeData = LoungeData(),
-    /** Datos de delivery Osaka */
-    val deliveryOsakaData: DeliveryOsakaData = DeliveryOsakaData(),
-    /** Datos de delivery Nori Taco */
-    val deliveryNoriTacoData: DeliveryNoriTacoData = DeliveryNoriTacoData(),
+    /** Datos de pedidos de delivery Osaka */
+    val osakaOrdersData: OsakaOrdersData = OsakaOrdersData(),
+    /** Datos de pedidos de delivery Nori Taco */
+    val noriTacoOrdersData: NoriTacoOrdersData = NoriTacoOrdersData(),
 ) {
     /**
      * Calcula el total de ventas con facturas

@@ -10,11 +10,11 @@ import com.osaka.cashbalancerapi.requests.InvoiceSaleRequest
 import com.osaka.cashbalancerapi.requests.PaymentMethodTransactionRequest
 import com.osaka.cashbalancerapi.requests.ReliefRequest
 import com.osaka.cashbalancerapi.requests.UpdateCurrentAccountRequest
-import com.osaka.cashbalancerapi.requests.UpdateDeliveryNoriTacoDataRequest
-import com.osaka.cashbalancerapi.requests.UpdateDeliveryOsakaDataRequest
 import com.osaka.cashbalancerapi.requests.UpdateInitialBalanceRequest
 import com.osaka.cashbalancerapi.requests.UpdateLoungeDataRequest
 import com.osaka.cashbalancerapi.requests.UpdateMarketingRequest
+import com.osaka.cashbalancerapi.requests.UpdateNoriTacoOrdersRequest
+import com.osaka.cashbalancerapi.requests.UpdateOsakaOrdersRequest
 import com.osaka.cashbalancerapi.services.interfaces.ICashRenditionService
 import com.osaka.cashbalancerapi.utils.constants.keys.PathVariableKey
 import jakarta.validation.Validator
@@ -231,15 +231,15 @@ class CashRenditionHandler(
     }
 
     /**
-     * Actualiza los datos de delivery Osaka
-     * PUT /cash-renditions/{id}/delivery-osaka-data
+     * Actualiza los datos de pedidos de Osaka
+     * PUT /cash-renditions/{id}/sales/orders/osaka
      */
-    suspend fun updateDeliveryOsakaData(request: ServerRequest): ServerResponse {
+    suspend fun updateOsakaOrders(request: ServerRequest): ServerResponse {
         val id = request.getUUIDPathVariable(PathVariableKey.ID)
-        val updateRequest = request.awaitBodyAndValidate<UpdateDeliveryOsakaDataRequest>(validator)
+        val updateRequest = request.awaitBodyAndValidate<UpdateOsakaOrdersRequest>(validator)
 
         val cashRendition =
-            cashRenditionService.updateDeliveryOsakaData(
+            cashRenditionService.updateOsakaOrders(
                 renditionId = id,
                 ohashis = updateRequest.ohashis,
                 orders = updateRequest.orders,
@@ -249,15 +249,15 @@ class CashRenditionHandler(
     }
 
     /**
-     * Actualiza los datos de delivery Nori Taco
-     * PUT /cash-renditions/{id}/delivery-nori-taco-data
+     * Actualiza los datos de pedidos de Nori Taco
+     * PUT /cash-renditions/{id}/sales/orders/nori-taco
      */
-    suspend fun updateDeliveryNoriTacoData(request: ServerRequest): ServerResponse {
+    suspend fun updateNoriTacoOrders(request: ServerRequest): ServerResponse {
         val id = request.getUUIDPathVariable(PathVariableKey.ID)
-        val updateRequest = request.awaitBodyAndValidate<UpdateDeliveryNoriTacoDataRequest>(validator)
+        val updateRequest = request.awaitBodyAndValidate<UpdateNoriTacoOrdersRequest>(validator)
 
         val cashRendition =
-            cashRenditionService.updateDeliveryNoriTacoData(
+            cashRenditionService.updateNoriTacoOrders(
                 renditionId = id,
                 ohashis = updateRequest.ohashis,
                 orders = updateRequest.orders,

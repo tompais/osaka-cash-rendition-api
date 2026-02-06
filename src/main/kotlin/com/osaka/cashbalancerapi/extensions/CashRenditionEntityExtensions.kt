@@ -1,10 +1,10 @@
 package com.osaka.cashbalancerapi.extensions
 
 import com.osaka.cashbalancerapi.models.CashRendition
-import com.osaka.cashbalancerapi.models.DeliveryNoriTacoData
-import com.osaka.cashbalancerapi.models.DeliveryOsakaData
 import com.osaka.cashbalancerapi.models.ExchangeRates
 import com.osaka.cashbalancerapi.models.LoungeData
+import com.osaka.cashbalancerapi.models.NoriTacoOrdersData
+import com.osaka.cashbalancerapi.models.OsakaOrdersData
 import com.osaka.cashbalancerapi.models.SalesData
 import com.osaka.cashbalancerapi.models.User
 import com.osaka.cashbalancerapi.postgresql.r2dbc.entities.BigBoxSaleEntity
@@ -26,10 +26,10 @@ fun CashRendition.toEntity() =
         currentAccount = salesData.currentAccount,
         loungeOtoshis = salesData.loungeData.otoshis,
         loungeOhashis = salesData.loungeData.ohashis,
-        delyOskOhashis = salesData.deliveryOsakaData.ohashis,
-        delyOskOrders = salesData.deliveryOsakaData.orders,
-        delyNtOrders = salesData.deliveryNoriTacoData.orders,
-        delyNtOhashis = salesData.deliveryNoriTacoData.ohashis,
+        osakaOhashis = salesData.osakaOrdersData.ohashis,
+        osakaOrders = salesData.osakaOrdersData.orders,
+        noriTacoOrders = salesData.noriTacoOrdersData.orders,
+        noriTacoOhashis = salesData.noriTacoOrdersData.ohashis,
         usdToArs = exchangeRates.usdToArs,
         brlToArs = exchangeRates.brlToArs,
         eurToArs = exchangeRates.eurToArs,
@@ -57,8 +57,8 @@ fun CashRenditionEntity.toDomain(
             marketing = marketing,
             currentAccount = currentAccount,
             loungeData = LoungeData(otoshis = loungeOtoshis, ohashis = loungeOhashis),
-            deliveryOsakaData = DeliveryOsakaData(ohashis = delyOskOhashis, orders = delyOskOrders),
-            deliveryNoriTacoData = DeliveryNoriTacoData(orders = delyNtOrders, ohashis = delyNtOhashis),
+            osakaOrdersData = OsakaOrdersData(ohashis = osakaOhashis, orders = osakaOrders),
+            noriTacoOrdersData = NoriTacoOrdersData(orders = noriTacoOrders, ohashis = noriTacoOhashis),
         ),
     exchangeRates =
         ExchangeRates(
